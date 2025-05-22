@@ -1,6 +1,13 @@
+
 package likelion13th.blog.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import likelion13th.blog.domain.Article;
+import likelion13th.blog.dto.AddArticleRequest;
+import likelion13th.blog.dto.ArticleResponse;
+import likelion13th.blog.dto.SimpleArticleResponse;
+import likelion13th.blog.repository.ArticleRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -8,45 +15,33 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
+@RequiredArgsConstructor
 public class ArticleService {
-    private final List<Article> articleDB=new ArrayList<>(); //데이터를 임시 저장할 DB
-    private Long nextId=1L; //데이터베이스는 여러번 쓰이므로
+    private final ArticleRepository articleRepository;
 
-    public Article addArticle(Article article) throws IllegalAccessException {
+    public ArticleResponse addArticle(AddArticleRequest request) {
+        Article article = request.toEntity();
 
-        if(article.getAuthor() == null //정보가 비어있는 지 확인
-                || article.getContent()== null
-                || article.getTitle()==null
-                || article.getPassword()==null
-                ){
-            throw new IllegalArgumentException("제목,내용,작성자,비밀번호는 필수 입력 항목입니다.");
+        articleRepository.save(article);
+
+        return ArticleResponse.of(article);
         }
 
-        Article newArticle = new Article(
-                nextId++,
-                article.getTitle(),
-                article.getContent(),
-                article.getAuthor(),
-                article.getPassword()
-        );
+    //전체 글 조회
+    public List<SimpleArticleResponse> getAllArticles(){
+        List<Article> articleList = articleRepository.findAll();
 
-        articleDB.add(newArticle);
+        List<SimpleArticleResponse> articleResponseList = articleList.stream().map(article-> SimpleArticleResponse.of(article)).toList();
 
-        return newArticle;
-    };
-
-    public List<Article> findAll(){
-        return articleDB;
+        return articleResponseList;
     }
 
-    public Article findById(Long id){
+    //단일 글 조회
+    public ArticleResponse getArticle(Long id){
+        Article article = articleRepository.findById(id).orElseThrow(()-> new EntityNotFoundException("해당 ID의 게시글을 찾을 수 없습니다. ID: "+id));
 
-        for(Article article: articleDB){
-            if(article.getId().equals(id)){
-                return article;
-            }
-        }
-
-        throw new NoSuchElementException("해당 ID의 게시글을 찾을 수 없습니다.");
+        return ArticleResponse.of(article);
     }
 }
+
+
