@@ -44,5 +44,5 @@ public class ArticleController {
         return ResponseEntity.ok(new ApiResponse(true,200,"게시글 조회 성공", response));
 
     }
-
+gi
 }
