@@ -48,7 +48,7 @@ public class ArticleController {
         return ResponseEntity.ok(new ApiResponse(true,204,"게시글 수정 성공",response));
     }
 
-    @DeleteMapping("/id")
+    @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse> deleteArticle(@PathVariable long id, @RequestBody DeleteRequest request){
         articleService.deleteArticle(id, request);
         return ResponseEntity.ok(new ApiResponse(true,200,"댓글 삭제 성공"));
