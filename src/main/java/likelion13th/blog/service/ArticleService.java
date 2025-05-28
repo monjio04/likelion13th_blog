@@ -6,6 +6,7 @@ import jakarta.transaction.Transactional;
 import likelion13th.blog.domain.Article;
 import likelion13th.blog.dto.*;
 import likelion13th.blog.repository.ArticleRepository;
+import likelion13th.blog.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +18,22 @@ import java.util.NoSuchElementException;
 @RequiredArgsConstructor
 public class ArticleService {
     private final ArticleRepository articleRepository;
+    private final CommentRepository commentRepository;
 
+    //단일 글 조회
+    public ArticleDetailResponse getArticle(Long id){
+        Article article = articleRepository.findById(id).orElseThrow(()-> new EntityNotFoundException("해당 ID의 게시글을 찾을 수 없습니다. ID: "+id));
+
+        List<CommentResponse> comments=getCommentList(article);
+        return ArticleDetailResponse.of(article,comments);
+    }
+
+    private List<CommentResponse> getCommentList(Article article){
+        return commentRepository.findByArticle(article).stream().map(comment->CommentResponse.of(comment)).toList();
+    }
+
+
+    //게시글 생성
     public ArticleResponse addArticle(AddArticleRequest request) {
         Article article = request.toEntity();
 
@@ -33,13 +49,6 @@ public class ArticleService {
         List<SimpleArticleResponse> articleResponseList = articleList.stream().map(article-> SimpleArticleResponse.of(article)).toList();
 
         return articleResponseList;
-    }
-
-    //단일 글 조회
-    public ArticleResponse getArticle(Long id){
-        Article article = articleRepository.findById(id).orElseThrow(()-> new EntityNotFoundException("해당 ID의 게시글을 찾을 수 없습니다. ID: "+id));
-
-        return ArticleResponse.of(article);
     }
 
     @Transactional

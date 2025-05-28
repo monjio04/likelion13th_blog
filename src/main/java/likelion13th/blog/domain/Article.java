@@ -49,7 +49,7 @@ public class Article {
         this.content=content;
     }
 
-    public void incrementCommentCount(){
+    public void increasementCommentCount(){
         commentCount++;
     }
 
